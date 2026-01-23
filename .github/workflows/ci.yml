@@ -63,3 +63,4 @@ jobs:
       run: |
         docker tag secdevops-pipeline ghcr.io/${{ github.repository }}:latest
         docker push ghcr.io/${{ github.repository }}:latest
+      
