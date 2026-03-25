@@ -64,7 +64,7 @@ jobs:
 
     - name: Push Docker image
       run: |
-        REPO_LC=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        REPO_LC=$(echo "${{ github.repository_owner }}/secdevops-pipeline" | tr '[:upper:]' '[:lower:]')
         docker tag secdevops-pipeline ghcr.io/$REPO_LC:latest
         docker push ghcr.io/$REPO_LC:latest
 
