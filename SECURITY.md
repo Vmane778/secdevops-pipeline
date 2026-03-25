@@ -2,20 +2,49 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.x.x   | :white_check_mark: |
+| < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a security vulnerability in this project, please **do not** open a public GitHub issue. Instead:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+1. **Email** the security team with:
+   - Description of the vulnerability
+   - Steps to reproduce (if applicable)
+   - Potential impact
+   - Affected version(s)
+
+2. **Response Timeline**:
+   - Initial acknowledgment: Within 48 hours
+   - Status update: Within 7 days
+   - Resolution target: Based on severity
+
+## Security Practices
+
+### Automated Security Measures
+
+- **Container Scanning**: Every Docker image is scanned with Trivy during CI/CD pipeline
+- **Code Linting**: Python code is checked with flake8 for common issues
+- **Dependency Monitoring**: Regular checks for vulnerable dependencies
+- **Vulnerability Reporting**: Results uploaded to GitHub Security tab
+
+### Security Updates
+
+- Critical vulnerabilities: Patched immediately
+- High vulnerabilities: Patched within 7 days
+- Medium vulnerabilities: Patched within 30 days
+- Low vulnerabilities: Addressed in next release
+
+### Best Practices
+
+- Keep dependencies updated via Dependabot
+- Use secrets management for sensitive data
+- Review security scan results regularly
+- Follow secure coding practices
+
+## Dependencies
+
+Current dependencies are managed in `requirements.txt`. Security advisories for known vulnerabilities in dependencies are checked automatically.
