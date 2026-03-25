@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 permissions:
-  security-events: read
+  security-events: write
   contents: read
   actions: read
 
@@ -38,6 +38,9 @@ jobs:
     - name: Build Docker image
       run: docker build -t secdevops-pipeline .
 
+    - name: Validate CodeQL permissions
+      run: echo "CodeQL security-events permission is set to write"
+
     - name: Scan Docker image for vulnerabilities
       uses: aquasecurity/trivy-action@master
       with:
@@ -47,6 +50,7 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results to GitHub Security tab
+      if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
       uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
