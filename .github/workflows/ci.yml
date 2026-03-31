@@ -65,8 +65,9 @@ jobs:
 
     - name: Push Docker image
       run: |
-        docker tag secdevops-pipeline ghcr.io/${{ github.actor }}/secdevops-pipeline:latest
-        docker push ghcr.io/${{ github.actor }}/secdevops-pipeline:latest
+        ACTOR_LOWER=$(echo "$GITHUB_ACTOR" | tr '[:upper:]' '[:lower:]')
+        docker tag secdevops-pipeline ghcr.io/${ACTOR_LOWER}/secdevops-pipeline:latest
+        docker push ghcr.io/${ACTOR_LOWER}/secdevops-pipeline:latest
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v3
