@@ -77,6 +77,10 @@ jobs:
       working-directory: ./terraform
       run: terraform init
 
+    - name: Terraform Validate
+      working-directory: ./terraform
+      run: terraform validate
+
     - name: Build Lambda deployment package
       run: |
         mkdir lambda-package
@@ -86,7 +90,20 @@ jobs:
         zip -r ../deployment-package.zip .
         cd ..
 
+    - name: Check AWS credentials availability
+      id: check_aws
+      run: |
+        if [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]]; then
+          echo "available=true" >> $GITHUB_OUTPUT
+        else
+          echo "available=false" >> $GITHUB_OUTPUT
+        fi
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
     - name: Terraform Plan
+      if: steps.check_aws.outputs.available == 'true'
       working-directory: ./terraform
       run: terraform plan
       env:
@@ -94,10 +111,27 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && steps.check_aws.outputs.available == 'true'
       working-directory: ./terraform
       run: terraform apply -auto-approve
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform run status
+      env:
+        AWS_AVAILABLE: ${{ steps.check_aws.outputs.available }}
+        GIT_REF: ${{ github.ref }}
+      run: |
+        if [[ "$AWS_AVAILABLE" == "true" ]]; then
+          echo "✅ Terraform ran: Init, Validate, Plan completed successfully."
+          if [[ "$GIT_REF" == "refs/heads/main" ]]; then
+            echo "✅ Terraform Apply ran on main branch."
+          else
+            echo "ℹ️ Terraform Apply skipped (only runs on main branch)."
+          fi
+        else
+          echo "✅ Terraform ran: Init and Validate completed successfully."
+          echo "⚠️ Terraform Plan and Apply skipped: AWS credentials (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) are not configured."
+        fi
       
