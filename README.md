@@ -52,6 +52,29 @@ docker build -t secdevops-pipeline .
 docker run -p 8080:8080 secdevops-pipeline
 ```
 
+## Required GitHub Secrets
+
+The pipeline uses the following secrets that you must add to **Settings → Secrets and variables → Actions** in your GitHub repository:
+
+| Secret Name | Description | Required |
+|---|---|---|
+| `AWS_ACCESS_KEY_ID` | Your AWS access key ID (from IAM → Security credentials) | For Terraform deploy |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret access key (from IAM → Security credentials) | For Terraform deploy |
+
+> **Note:** `GITHUB_TOKEN` is provided automatically by GitHub Actions — you do **not** need to add it manually.
+
+### How to add secrets
+
+1. Go to your repository on GitHub
+2. Click **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Enter the name exactly as shown in the table above (e.g. `AWS_ACCESS_KEY_ID`)
+5. Paste the value and click **Add secret**
+
+If the AWS secrets are not configured, the **Terraform Plan** and **Terraform Apply** steps are automatically skipped and the rest of the pipeline still runs successfully.
+
+---
+
 ## CI/CD Pipeline
 
 The GitHub Actions workflow (`ci.yml`) automatically:
@@ -87,9 +110,7 @@ The project uses Terraform to provision cloud infrastructure with security guard
 
 The CI/CD pipeline automatically deploys to AWS on pushes to `main`. To deploy manually:
 
-1. Set up AWS credentials in GitHub Secrets:
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
+1. Add the AWS credentials as GitHub Secrets (see [Required GitHub Secrets](#required-github-secrets) above)
 
 2. Ensure you have appropriate AWS permissions for Terraform operations
 

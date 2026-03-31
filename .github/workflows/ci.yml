@@ -89,6 +89,8 @@ jobs:
 
     - name: Check AWS credentials availability
       id: check-aws-creds
+      # Requires GitHub secrets: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+      # Add them under Settings → Secrets and variables → Actions
       run: |
         if [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]]; then
           echo "available=true" >> $GITHUB_OUTPUT
