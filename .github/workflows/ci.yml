@@ -10,6 +10,7 @@ permissions:
   security-events: write
   contents: read
   actions: read
+  packages: write
 
 jobs:
   build-and-scan:
@@ -86,7 +87,20 @@ jobs:
         zip -r ../deployment-package.zip .
         cd ..
 
+    - name: Check AWS credentials availability
+      id: check-aws-creds
+      run: |
+        if [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]]; then
+          echo "available=true" >> $GITHUB_OUTPUT
+        else
+          echo "available=false" >> $GITHUB_OUTPUT
+        fi
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
     - name: Terraform Plan
+      if: steps.check-aws-creds.outputs.available == 'true'
       working-directory: ./terraform
       run: terraform plan
       env:
@@ -94,7 +108,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && steps.check-aws-creds.outputs.available == 'true'
       working-directory: ./terraform
       run: terraform apply -auto-approve
       env:
