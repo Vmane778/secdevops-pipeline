@@ -77,6 +77,10 @@ jobs:
       working-directory: ./terraform
       run: terraform init
 
+    - name: Terraform Validate
+      working-directory: ./terraform
+      run: terraform validate
+
     - name: Build Lambda deployment package
       run: |
         mkdir lambda-package
