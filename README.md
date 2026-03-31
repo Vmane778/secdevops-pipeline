@@ -63,6 +63,16 @@ The pipeline uses the following secrets that you must add to **Settings → Secr
 
 > **Note:** `GITHUB_TOKEN` is provided automatically by GitHub Actions — you do **not** need to add it manually.
 
+### How secrets relate to each other
+
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are **completely isolated** from each other inside GitHub:
+
+- GitHub encrypts each secret separately. **One secret cannot read or reference another secret's value.**
+- At runtime, GitHub injects each secret as its own environment variable. The workflow reads them independently — `${{ secrets.AWS_ACCESS_KEY_ID }}` and `${{ secrets.AWS_SECRET_ACCESS_KEY }}` are two unrelated substitutions.
+- AWS requires **both** values together to authenticate (they form a credential pair), but that pairing happens outside of GitHub — inside the AWS SDK when it builds the API request signature. GitHub itself treats them as two separate, opaque strings.
+
+In short: the secrets do **not** know about each other. You must add them both, name them exactly as shown in the table above, and the workflow will pass them together to the AWS steps.
+
 ### How to add secrets
 
 1. Go to your repository on GitHub
