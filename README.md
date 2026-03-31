@@ -52,6 +52,63 @@ docker build -t secdevops-pipeline .
 docker run -p 8080:8080 secdevops-pipeline
 ```
 
+## Required GitHub Secrets
+
+The pipeline uses the following secrets that you must add to **Settings → Secrets and variables → Actions** in your GitHub repository:
+
+| Secret Name | Description | Required |
+|---|---|---|
+| `AWS_ACCESS_KEY_ID` | Your AWS access key ID (from IAM → Security credentials) | For Terraform deploy |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret access key (from IAM → Security credentials) | For Terraform deploy |
+
+> **Note:** `GITHUB_TOKEN` is provided automatically by GitHub Actions — you do **not** need to add it manually.
+
+### Do I need two different keys?
+
+**Yes — you need both, and they are two distinct values.**
+
+AWS uses a credential pair to authenticate API calls. Think of it like a username and password:
+
+| Value | Looks like | What it does |
+|---|---|---|
+| `AWS_ACCESS_KEY_ID` | `AKIAIOSFODNN7EXAMPLE` (starts with `AKIA`, 20 characters) | Identifies *which* AWS account/user is making the request — it is not secret |
+| `AWS_SECRET_ACCESS_KEY` | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` (40-character random string) | Signs the request to prove the caller owns the account — **keep this secret** |
+
+Neither value alone is enough. AWS needs both to authenticate the request.
+
+#### Where to get them
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/)
+2. Go to **IAM** → **Users** → click your IAM user
+3. Click the **Security credentials** tab
+4. Click **Create access key** → select *Application running outside AWS*
+5. AWS shows you **both values on the same screen, once only** — copy them both before closing the dialog
+6. Add them as **two separate** GitHub secrets (see [How to add secrets](#how-to-add-secrets) below)
+
+> **Important:** If you lose the secret access key you cannot retrieve it again — you must create a new key pair in IAM and update the GitHub secrets.
+
+### How secrets relate to each other
+
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are **completely isolated** from each other inside GitHub:
+
+- GitHub encrypts each secret separately. **One secret cannot read or reference another secret's value.**
+- At runtime, GitHub injects each secret as its own environment variable. The workflow reads them independently — `${{ secrets.AWS_ACCESS_KEY_ID }}` and `${{ secrets.AWS_SECRET_ACCESS_KEY }}` are two unrelated substitutions.
+- AWS requires **both** values together to authenticate (they form a credential pair), but that pairing happens outside of GitHub — inside the AWS SDK when it builds the API request signature. GitHub itself treats them as two separate, opaque strings.
+
+In short: the secrets do **not** know about each other. You must add them both, name them exactly as shown in the table above, and the workflow will pass them together to the AWS steps.
+
+### How to add secrets
+
+1. Go to your repository on GitHub
+2. Click **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Enter the name exactly as shown in the table above (e.g. `AWS_ACCESS_KEY_ID`)
+5. Paste the value and click **Add secret**
+
+If the AWS secrets are not configured, the **Terraform Plan** and **Terraform Apply** steps are automatically skipped and the rest of the pipeline still runs successfully.
+
+---
+
 ## CI/CD Pipeline
 
 The GitHub Actions workflow (`ci.yml`) automatically:
@@ -87,9 +144,7 @@ The project uses Terraform to provision cloud infrastructure with security guard
 
 The CI/CD pipeline automatically deploys to AWS on pushes to `main`. To deploy manually:
 
-1. Set up AWS credentials in GitHub Secrets:
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
+1. Add the AWS credentials as GitHub Secrets (see [Required GitHub Secrets](#required-github-secrets) above)
 
 2. Ensure you have appropriate AWS permissions for Terraform operations
 
