@@ -64,10 +64,17 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Push Docker image
+      id: docker-push
+      continue-on-error: true
       run: |
         ACTOR_LOWER=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]')
         docker tag secdevops-pipeline ghcr.io/${ACTOR_LOWER}/secdevops-pipeline:latest
         docker push ghcr.io/${ACTOR_LOWER}/secdevops-pipeline:latest
+
+    - name: Warn if Docker push failed
+      if: steps.docker-push.outcome == 'failure'
+      run: |
+        echo "::warning::Docker push to ghcr.io failed. To fix, go to your organization/account Settings → Actions → General → Workflow permissions and enable 'Read and write permissions', or supply a PAT with write:packages scope as the PAT_TOKEN secret."
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v3
