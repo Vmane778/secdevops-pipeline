@@ -1,16 +1,19 @@
-import os
 import sys
 from io import StringIO
 from main import app  # Import the Flask app from main.py
 
 # Simple WSGI adapter for Lambda
+
+
 def lambda_handler(event, context):
     # Build WSGI environ from API Gateway event
+    query_params = event.get('queryStringParameters') or {}
+    query_string = '&'.join([f"{k}={v}" for k, v in query_params.items()])
     environ = {
         'REQUEST_METHOD': event.get('httpMethod', 'GET'),
         'SCRIPT_NAME': '',
         'PATH_INFO': event.get('path', '/'),
-        'QUERY_STRING': event.get('queryStringParameters', {}) and '&'.join([f"{k}={v}" for k, v in event.get('queryStringParameters', {}).items()]) or '',
+        'QUERY_STRING': query_string,
         'CONTENT_TYPE': event.get('headers', {}).get('content-type', ''),
         'CONTENT_LENGTH': str(len(event.get('body', ''))),
         'SERVER_NAME': 'lambda',
