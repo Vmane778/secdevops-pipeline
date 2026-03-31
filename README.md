@@ -63,6 +63,30 @@ The pipeline uses the following secrets that you must add to **Settings → Secr
 
 > **Note:** `GITHUB_TOKEN` is provided automatically by GitHub Actions — you do **not** need to add it manually.
 
+### Do I need two different keys?
+
+**Yes — you need both, and they are two distinct values.**
+
+AWS uses a credential pair to authenticate API calls. Think of it like a username and password:
+
+| Value | Looks like | What it does |
+|---|---|---|
+| `AWS_ACCESS_KEY_ID` | `AKIAIOSFODNN7EXAMPLE` (starts with `AKIA`, 20 characters) | Identifies *which* AWS account/user is making the request — it is not secret |
+| `AWS_SECRET_ACCESS_KEY` | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` (40-character random string) | Signs the request to prove the caller owns the account — **keep this secret** |
+
+Neither value alone is enough. AWS needs both to authenticate the request.
+
+#### Where to get them
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/)
+2. Go to **IAM** → **Users** → click your IAM user
+3. Click the **Security credentials** tab
+4. Click **Create access key** → select *Application running outside AWS*
+5. AWS shows you **both values on the same screen, once only** — copy them both before closing the dialog
+6. Add them as **two separate** GitHub secrets (see [How to add secrets](#how-to-add-secrets) below)
+
+> **Important:** If you lose the secret access key you cannot retrieve it again — you must create a new key pair in IAM and update the GitHub secrets.
+
 ### How secrets relate to each other
 
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are **completely isolated** from each other inside GitHub:
