@@ -10,7 +10,6 @@ permissions:
   security-events: write
   contents: read
   actions: read
-  packages: write  # Add this line
 
 jobs:
   build-and-scan:
@@ -61,7 +60,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.PAT_TOKEN }}  # Use your PAT secret instead
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Push Docker image
       run: |
